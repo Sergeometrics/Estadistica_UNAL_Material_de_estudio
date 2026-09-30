@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estadística Aplicada con R - UNAL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e3c72;
+            --primary-light: #2a5298;
+            --secondary: #f39c12;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --text: #34495e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .university-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Navigation */
+        nav {
+            background: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        nav a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--secondary);
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Module cards */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .module-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .module-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 1.5rem;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .module-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .module-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .module-body {
+            padding: 1.5rem;
+        }
+
+        .module-body h3 {
+            color: var(--primary);
+            margin: 1rem 0 0.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        .module-body ul {
+            list-style: none;
+            margin-left: 1rem;
+        }
+
+        .module-body li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .module-body li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .files-list {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .files-list strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .files-list li {
+            margin: 0.3rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        /* Color scheme for modules */
+        .module-1 .module-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .module-2 .module-header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .module-3 .module-header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .module-4 .module-header { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+        /* Feature section */
+        .features {
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .features h2 {
+            color: var(--primary);
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-box {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--light);
+            border-radius: 8px;
+        }
+
+        .feature-box h3 {
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+        }
+
+        /* Quick start section */
+        .quickstart {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .quickstart h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .quickstart-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .step {
+            border-left: 4px solid var(--secondary);
+            padding-left: 1.5rem;
+            padding: 1rem 1rem 1rem 1.5rem;
+            background: var(--light);
+            border-radius: 4px;
+        }
+
+        .step-number {
+            background: var(--secondary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .code-block {
+            background: var(--dark);
+            color: #ecf0f1;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Requirements section */
+        .requirements {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .requirements h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .req-item {
+            padding: 1rem;
+            background: var(--light);
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--secondary);
+            border-radius: 4px;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin: 1rem 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--light);
+        }
+
+        tbody tr:hover {
+            background: var(--light);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+        }
+
+        .footer-meta {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+            }
+
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features {
+                padding: 1.5rem;
+            }
+
+            .module-body h3 {
+                margin-top: 0.7rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container > * {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .module-card {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .module-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .module-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .module-card:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-block;
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>📊 Estadística Aplicada con R</h1>
+        <p>Materiales de Clase - Universidad Nacional de Colombia</p>
+        <div class="university-badge">
+            🎓 UNAL | Programa de Estadística | 2026
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <ul>
+            <li><a href="#modulos">Módulos</a></li>
+            <li><a href="#features">Características</a></li>
+            <li><a href="#quickstart">Inicio Rápido</a></li>
+            <li><a href="#requisitos">Requisitos</a></li>
+            <li><a href="#datasets">Datos</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Main content -->
+        <section id="modulos">
+            <h2 style="text-align: center; color: white; margin-bottom: 2rem; font-size: 2rem;">
+                🎯 Módulos Temáticos
+            </h2>
+
+            <div class="modules-grid">
+                <!-- Module 1: Regression -->
+                <div class="module-card module-1">
+                    <div class="module-header">
+                        <div class="module-icon">📈</div>
+                        <h2>Análisis de Regresión</h2>
+                    </div>
+                    <div class="module-body">
+                        <p><strong>Objetivo:</strong> Dominar modelación lineal, inferencia sobre parámetros y diagnósticos.</p>
+
+                        <h3>Tópicos principales</h3>
+                        <ul>
+                            <li>Regresión lineal simple y múltiple</li>
+                            <li>Estimación insesgada (β₀, β₁, σ²)</li>
+                            <li>Varianza de estimadores</li>
+                            <li>Intervalos de confianza y pruebas</li>
+                            <li>Simulación de cobertura</li>
+                            <li>Variables categóricas</li>
+                        </ul>
+
+                        <div class="files-list">
+                            <strong>📁 Archivos:</strong>
+                            <ul>
+                                <li>1. Mazda_descriptivo.R</li>
+                                <li>3. Insesgamiento_varianza.R</li>
+                                <li>4. Inferencia_sobre_betas.R</li>
+                                <li>Tarea_pero_Decente.qmd</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Module 2: Sampling -->
+                <div class="module-card module-2">
+                    <div class="module-header">
+                        <div class="module-icon">🎲</div>
+                        <h2>Teoría de Muestreo</h2>
+                    </div>
+                    <div class="module-body">
+                        <p><strong>Objetivo:</strong> Comprender diseños, probabilidades de inclusión y propiedades de estimadores.</p>
+
+                        <h3>Tópicos principales</h3>
+                        <ul>
+                            <li>Muestreo Aleatorio Simple (MAS)</li>
+                            <li>Probabilidades de inclusión (πᵢ, πᵢⱼ)</li>
+                            <li>Estimadores de Horvitz-Thompson</li>
+                            <li>Varianza y sesgo</li>
+                            <li>Error Cuadrático Medio (MSE)</li>
+                            <li>Efecto del Diseño (Deff)</li>
+                        </ul>
+
+                        <div class="files-list">
+                            <strong>📁 Archivos:</strong>
+                            <ul>
+                                <li>cap2.R</li>
+                                <li>exercise_2_1.R</li>
+                                <li>probability_matrices.R</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Module 3: Multivariate -->
+                <div class="module-card module-3">
+                    <div class="module-header">
+                        <div class="module-icon">📊</div>
+                        <h2>Análisis Multivariado</h2>
+                    </div>
+                    <div class="module-body">
+                        <p><strong>Objetivo:</strong> Reducción dimensional, agrupamiento y visualización de datos complejos.</p>
+
+                        <h3>Tópicos principales</h3>
+                        <ul>
+                            <li>Análisis de Componentes Principales (PCA)</li>
+                            <li>Eigenvalores y eigenvectores</li>
+                            <li>Análisis de Correspondencias (ACS)</li>
+                            <li>Clustering (K-means, jerárquico)</li>
+                            <li>Índice Calinski-Harabasz</li>
+                            <li>HCPC</li>
+                        </ul>
+
+                        <div class="files-list">
+                            <strong>📁 Archivos:</strong>
+                            <ul>
+                                <li>LABORATORIO_3.Rmd (PCA)</li>
+                                <li>LABORATORIO_4.Rmd (ACS)</li>
+                                <li>LABORATORIO_5.Rmd (Clustering)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Module 4: Nonparametric -->
+                <div class="module-card module-4">
+                    <div class="module-header">
+                        <div class="module-icon">📉</div>
+                        <h2>Estadística No Paramétrica</h2>
+                    </div>
+                    <div class="module-body">
+                        <p><strong>Objetivo:</strong> Pruebas de hipótesis sin supuestos distribucionales restrictivos.</p>
+
+                        <h3>Tópicos principales</h3>
+                        <ul>
+                            <li>Prueba de Wilcoxon (signed-rank)</li>
+                            <li>Prueba U de Mann-Whitney</li>
+                            <li>Distribuciones teóricas</li>
+                            <li>Comparación paramétrico vs no param.</li>
+                            <li>ANOVA y Tukey HSD</li>
+                            <li>Pruebas de asimetría</li>
+                        </ul>
+
+                        <div class="files-list">
+                            <strong>📁 Archivos:</strong>
+                            <ul>
+                                <li>Wilcoxon_MannWhitney_v4.R</li>
+                                <li>Dev.r</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features section -->
+        <section id="features" class="features">
+            <h2>✨ Características del Repositorio</h2>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon">💻</div>
+                    <h3>Código Comentado</h3>
+                    <p>Scripts R listos para ejecutar con explicaciones línea por línea</p>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-icon">📚</div>
+                    <h3>Teoría + Práctica</h3>
+                    <p>Implementación de conceptos estadísticos en datos reales</p>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-icon">📊</div>
+                    <h3>Datasets Reales</h3>
+                    <p>Datos de estudios, encuestas y observaciones del mundo real</p>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Simulaciones</h3>
+                    <p>Estudios Monte Carlo para validar propiedades estadísticas</p>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-icon">📖</div>
+                    <h3>Documentos Quarto</h3>
+                    <p>Reportes profesionales con LaTeX y HTML</p>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Visualizaciones</h3>
+                    <p>Gráficos con ggplot2 para interpretar resultados</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick start section -->
+        <section id="quickstart" class="quickstart">
+            <h2>🚀 Inicio Rápido</h2>
+
+            <div class="quickstart-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Clonar el repositorio</h3>
+                    <div class="code-block">git clone &lt;repo-url&gt;
+cd Repo</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Instalar dependencias</h3>
+                    <div class="code-block">install.packages(c("tidyverse",
+  "FactoMineR", "readxl"))</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Abrir en RStudio</h3>
+                    <div class="code-block"># Abrir el archivo Repo.Rproj
+# en RStudio</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Ejecutar scripts</h3>
+                    <div class="code-block">source("regresion/1. 
+  Mazda_descriptivo.R")</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Requirements section -->
+        <section id="requisitos" class="requirements">
+            <h2>📋 Requisitos Técnicos</h2>
+
+            <h3 style="color: var(--primary); margin: 1.5rem 0 1rem 0;">Versión de R</h3>
+            <div class="req-item">
+                <strong>R ≥ 4.0</strong> (Versión actual: 4.6.1)
+            </div>
+
+            <h3 style="color: var(--primary); margin: 1.5rem 0 1rem 0;">Librerías principales</h3>
+
+            <h4 style="margin-top: 1rem;">Manipulación de datos</h4>
+            <div class="req-item">
+                <code>tidyverse</code>, <code>dplyr</code>, <code>readxl</code>, <code>haven</code>
+            </div>
+
+            <h4 style="margin-top: 1rem;">Visualización</h4>
+            <div class="req-item">
+                <code>ggplot2</code>, <code>ggridges</code>, <code>factoextra</code>
+            </div>
+
+            <h4 style="margin-top: 1rem;">Análisis multivariado</h4>
+            <div class="req-item">
+                <code>FactoMineR</code>, <code>fpc</code>, <code>NbClust</code>
+            </div>
+
+            <h4 style="margin-top: 1rem;">Muestreo y pruebas</h4>
+            <div class="req-item">
+                <code>combinat</code>, <code>nortest</code>
+            </div>
+
+            <h4 style="margin-top: 1rem;">Reportes</h4>
+            <div class="req-item">
+                <code>rmarkdown</code>, <code>quarto</code>
+            </div>
+        </section>
+
+        <!-- Datasets section -->
+        <section id="datasets">
+            <h2 style="color: white; margin-bottom: 1.5rem; text-align: center; font-size: 2rem;">
+                📂 Conjuntos de Datos
+            </h2>
+
+            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dataset</th>
+                            <th>Descripción</th>
+                            <th>Módulo</th>
+                            <th>Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>mazda2021.xlsx</code></td>
+                            <td>Características de vehículos Mazda 2021</td>
+                            <td>Regresión</td>
+                            <td>Múltiples</td>
+                        </tr>
+                        <tr>
+                            <td><code>arboliños.csv</code></td>
+                            <td>Inventario forestal (árboles)</td>
+                            <td>Muestreo</td>
+                            <td>~500+</td>
+                        </tr>
+                        <tr>
+                            <td><code>Ciudades.xlsx</code></td>
+                            <td>Infraestructura urbana (RH, INFRA)</td>
+                            <td>Multivariado</td>
+                            <td>~20+</td>
+                        </tr>
+                        <tr>
+                            <td><code>Goats.csv</code></td>
+                            <td>Datos sobre cabras (pruebas no param.)</td>
+                            <td>No Paramétrico</td>
+                            <td>Experimental</td>
+                        </tr>
+                        <tr>
+                            <td><code>r14_Sci_Qs_Webometrics.csv</code></td>
+                            <td>Rankings de universidades</td>
+                            <td>Multivariado</td>
+                            <td>~1000+</td>
+                        </tr>
+                        <tr>
+                            <td><code>ECC_completa_19426.csv</code></td>
+                            <td>Dataset grande (correspondencias)</td>
+                            <td>Multivariado</td>
+                            <td>~19,426</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Learning path -->
+        <section style="background: white; padding: 2rem; border-radius: 12px; margin-top: 3rem; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
+            <h2 style="color: var(--primary); margin-bottom: 1.5rem;">🎓 Ruta de Aprendizaje Recomendada</h2>
+
+            <ol style="line-height: 2; font-size: 1.1rem;">
+                <li><strong>1. Análisis de Regresión</strong> - Fundamenta el método estadístico</li>
+                <li><strong>2. Teoría de Muestreo</strong> - Entiende la variabilidad en estimadores</li>
+                <li><strong>3. Análisis Multivariado</strong> - Aplica técnicas de reducción dimensional</li>
+                <li><strong>4. Estadística No Paramétrica</strong> - Aprende métodos robustos sin supuestos</li>
+            </ol>
+
+            <p style="margin-top: 1.5rem; padding: 1rem; background: var(--light); border-left: 4px solid var(--secondary); border-radius: 4px;">
+                <strong>💡 Consejo:</strong> Cada módulo incluye explicación teórica, código comentado, ejemplos con datos reales y simulaciones para validar propiedades. ¡Practica ejecutando el código!
+            </p>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <h3>📚 Estadística Aplicada con R</h3>
+        <p>Universidad Nacional de Colombia - Programa de Estadística</p>
+        <p>Materiales educativos para estudiantes de pregrado y posgrado</p>
+
+        <div class="footer-meta">
+            <p>📅 Última actualización: Septiembre 30, 2026</p>
+            <p>🔧 Versión de R: 4.6.1 | IDE: RStudio / Positron</p>
+            <p>📖 Licencia: Materiales académicos de uso educativo</p>
+            <p style="margin-top: 1rem; opacity: 0.7;">
+                Para reportar errores o sugerencias: Contactar con el instructor del curso
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+
+        // Add animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.module-card, .step, .req-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
