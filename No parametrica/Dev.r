@@ -252,3 +252,66 @@ hist(miny)
 
 shapiro.test(minx)
 shapiro.test(miny)
+
+####------------------------------Ejercicio 2-------------------------------####
+# 1. Crear el dataframe en formato ancho (tal como está en la imagen)
+df_ancho <- data.frame(
+  Estanque_1 = c(7.68, 7.69, 7.70, 7.70, 7.72, 7.73, 7.73, 7.76),
+  Estanque_2 = c(7.71, 7.73, 7.74, 7.74, 7.78, 7.78, 7.80, 7.81),
+  Estanque_3 = c(7.74, 7.75, 7.77, 7.78, 7.80, 7.81, 7.84, 7.85),
+  Estanque_4 = c(7.71, 7.71, 7.74, 7.79, 7.81, 7.85, 7.87, 7.91)
+)
+
+# 2. Convertir a formato largo (óptimo para realizar las pruebas estadísticas)
+df_largo <- data.frame(
+  pH = c(df_ancho$Estanque_1, df_ancho$Estanque_2, df_ancho$Estanque_3, df_ancho$Estanque_4),
+  Estanque = factor(rep(c("Estanque 1", "Estanque 2", "Estanque 3", "Estanque 4"), each = 8))
+)
+
+# Ver el dataframe estructurado
+print(df_largo)
+
+# Prueba de normalidad para cada estanque de forma individual
+shapiro_resultados <- tapply(df_largo$pH, df_largo$Estanque, shapiro.test)
+
+# Mostrar los resultados detallados
+print(shapiro_resultados)
+
+kruskal.test(df_largo$pH,df_largo$Estanque)
+
+# ANOVA (one-way) and Tukey HSD for df_largo
+modelo_aov_largo <- aov(pH ~ Estanque, data = df_largo)
+summary(modelo_aov_largo)
+
+# Post-hoc pairwise comparisons (Tukey)
+tukey_largo <- TukeyHSD(modelo_aov_largo)
+tukey_largo
+
+# Pairwise t-tests with Holm adjustment
+pairwise.t.test(df_largo$pH, df_largo$Estanque, p.adjust.method = "holm")
+
+
+
+####------------------------------Ejercicio 1-------------------------------####
+
+# 1. Crear el dataframe en formato ancho (tal como está en la imagen)
+df_ancho2 <- data.frame(
+  Hierba   = c(180, 173, 175, 182, 181),
+  Arbustos = c(172, 158, 167, 160, 175),
+  Arbol    = c(163, 170, 158, 162, 170)
+)
+
+# 2. Convertir a formato largo (óptimo para el análisis)
+df_largo2 <- data.frame(
+  Abundancia = c(df_ancho2$Hierba, df_ancho2$Arbustos, df_ancho2$Arbol),
+  Tratamiento = factor(rep(c("Hierba", "Arbustos", "Arbol"), each = 5))
+)
+
+# Ver el dataframe estructurado
+print(df_largo2)
+
+# Realizar el test de Kruskal-Wallis
+resultado_kruskal2 <- kruskal.test(Abundancia ~ Tratamiento, data = df_largo2)
+
+# Mostrar el resultado en consola
+print(resultado_kruskal2)
