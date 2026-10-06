@@ -1,0 +1,48 @@
+# Tarea opcional
+
+### Sergio Alejandro Buitrago Melo
+
+### Creación del dataframe
+
+Se crea un dataframe de prueba con individuos, y sus
+
+$$\pi_k$$
+
+```{r}
+x <- data.frame(
+  x = 1:10,
+  Pi_k = rep(1/10, 10)
+)
+```
+
+A cada individuo se le asigna su intervalo
+
+```{r}
+x$lim_inf <- c(0, cumsum(x$Pi_k[-nrow(x)]))
+x$lim_sup <- cumsum(x$Pi_k)
+
+```
+
+Y se crea un vector u de numeros aleatorios para comparar con los intervalos creados
+
+```{r}
+
+
+m <- 5
+u <- runif(m)
+
+intervalo <- findInterval(u, c(0, x$lim_sup), rightmost.closed = TRUE, all.inside = TRUE)
+
+seleccion <- x$x[intervalo]
+```
+
+Esto nos dá como resultado:
+
+```{r}
+
+muestra <- unique(seleccion)
+muestra
+n <- length(muestra)
+
+
+```
