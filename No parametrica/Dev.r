@@ -315,3 +315,6 @@ resultado_kruskal2 <- kruskal.test(Abundancia ~ Tratamiento, data = df_largo2)
 
 # Mostrar el resultado en consola
 print(resultado_kruskal2)
+
+set.seed(8)
+x<- rnorm(100,10,2)
