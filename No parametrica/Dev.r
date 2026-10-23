@@ -287,7 +287,7 @@ summary(modelo_aov_largo)
 tukey_largo <- TukeyHSD(modelo_aov_largo)
 tukey_largo
 
-# Pairwise t-tests with Holm adjustment
+# Pairwise t-tests with Hos adjustment
 pairwise.t.test(df_largo$pH, df_largo$Estanque, p.adjust.method = "holm")
 
 
@@ -318,3 +318,192 @@ print(resultado_kruskal2)
 
 set.seed(8)
 x<- rnorm(100,10,2)
+
+
+       # para reproducibilidad
+n <- 30                # tamaño de cada muestra
+m <- 100               # número de muestras
+
+# Matriz de 100 muestras de tamaño 30
+muestras <- matrix(rnorm(n * m, mean = 10, sd = 3), nrow = n, ncol = m)
+
+# Promedio y varianza muestral de cada una de las 100 muestras
+medias    <- apply(muestras, 2, mean)
+varianzas <- apply(muestras, 2, var)
+
+# Estimación de densidad kernel
+kde_media    <- density(medias)
+kde_varianza <- density(varianzas)
+
+# Gráficos
+par(mfrow = c(1, 2))
+
+plot(kde_media, main = "KDE de las 100 medias muestrales",
+     xlab = "Media muestral", lwd = 2, col = "steelblue")
+abline(v = mean(medias), col = "red", lty = 2)
+curve(dnorm(x, 10, 3/sqrt(n)), add = TRUE, lty = 3, col = "darkgreen")
+legend("topright", legend = c("KDE", "Media", "Normal teórica"),
+       col = c("steelblue", "red", "darkgreen"), lty = c(1, 2, 3), lwd = c(2,1,1))
+
+plot(kde_varianza, main = "KDE de las 100 varianzas muestrales",
+     xlab = "Varianza muestral", lwd = 2, col = "darkorange")
+abline(v = mean(varianzas), col = "red", lty = 2)
+legend("topright", legend = c("KDE", "Media de varianzas"),
+       col = c("darkorange", "red"), lty = c(1, 2), lwd = c(2, 1))
+
+par(mfrow = c(1, 1))
+
+# Resumen numérico
+summary(medias)
+summary(varianzas)
+
+# Valores teóricos de referencia
+cat("Media teórica: 10 | Desviación teórica de la media:", 3/sqrt(n), "\n")
+cat("Varianza teórica poblacional: 9\n")
+
+
+
+       # para reproducibilidad
+n <- 30                # tamaño de cada muestra
+m <- 100               # número de muestras
+
+# Matriz de 100 muestras de tamaño 30
+muestras <- matrix(rnorm(n * m, mean = 10, sd = 3), nrow = n, ncol = m)
+
+# Promedio y varianza muestral de cada una de las 100 muestras
+medias    <- apply(muestras, 2, mean)
+varianzas <- apply(muestras, 2, var)
+
+# Estimación de densidad kernel
+kde_media    <- density(medias)
+kde_varianza <- density(varianzas)
+
+# Gráficos
+par(mfrow = c(1, 2))
+
+plot(kde_media, main = "KDE de las 100 medias muestrales",
+     xlab = "Media muestral", lwd = 2, col = "steelblue")
+abline(v = mean(medias), col = "red", lty = 2)
+curve(dnorm(x, 10, 3/sqrt(n)), add = TRUE, lty = 3, col = "darkgreen")
+legend("topright", legend = c("KDE", "Media", "Normal teórica"),
+       col = c("steelblue", "red", "darkgreen"), lty = c(1, 2, 3), lwd = c(2,1,1))
+
+plot(kde_varianza, main = "KDE de las 100 varianzas muestrales",
+     xlab = "Varianza muestral", lwd = 2, col = "darkorange")
+abline(v = mean(varianzas), col = "red", lty = 2)
+legend("topright", legend = c("KDE", "Media de varianzas"),
+       col = c("darkorange", "red"), lty = c(1, 2), lwd = c(2, 1))
+
+par(mfrow = c(1, 1))
+
+# Resumen numérico
+summary(medias)
+summary(varianzas)
+
+# Valores teóricos de referencia
+cat("Media teórica: 10 | Desviación teórica de la media:", 3/sqrt(n), "\n")
+cat("Varianza teórica poblacional: 9\n")
+
+
+n <- 30                # tamaño de cada muestra
+m <- 100               # número de muestras
+
+# Matriz de 100 muestras de tamaño 30
+muestras <- matrix(rnorm(n * m, mean = 10, sd = 3), nrow = n, ncol = m)
+
+# Promedio y varianza muestral de cada una de las 100 muestras
+medias    <- apply(muestras, 2, mean)
+varianzas <- apply(muestras, 2, var)
+
+# Estimación de densidad kernel
+kde_media    <- density(medias)
+kde_varianza <- density(varianzas)
+
+# Gráficos
+par(mfrow = c(1, 2))
+
+plot(kde_media, main = "KDE de las 100 medias muestrales",
+     xlab = "Media muestral", lwd = 2, col = "steelblue")
+abline(v = mean(medias), col = "red", lty = 2)
+curve(dnorm(x, 10, 3/sqrt(n)), add = TRUE, lty = 3, col = "darkgreen")
+legend("topright", legend = c("KDE", "Media", "Normal teórica"),
+       col = c("steelblue", "red", "darkgreen"), lty = c(1, 2, 3), lwd = c(2,1,1))
+
+plot(kde_varianza, main = "KDE de las 100 varianzas muestrales",
+     xlab = "Varianza muestral", lwd = 2, col = "darkorange")
+abline(v = mean(varianzas), col = "red", lty = 2)
+legend("topright", legend = c("KDE", "Media de varianzas"),
+       col = c("darkorange", "red"), lty = c(1, 2), lwd = c(2, 1))
+
+par(mfrow = c(1, 1))
+
+# Resumen numérico
+summary(medias)
+summary(varianzas)
+
+# Valores teóricos de referencia
+cat("Media teórica: 10 | Desviación teórica de la media:", 3/sqrt(n), "\n")
+cat("Varianza teórica poblacional: 9\n")
+
+            # reproducibilidad
+mu    <- 10                   # media poblacional
+sigma <- 3                    # desviación estándar poblacional
+n     <- 50                   # tamaño de cada muestra
+m     <- 100                  # número de muestras
+
+# --- 1. Generar las 100 muestras (matriz de n x m) ---
+muestras <- matrix(rnorm(n * m, mean = mu, sd = sigma), nrow = n)
+
+# --- 2. Promedio y varianza muestral de cada muestra ---
+medias    <- apply(muestras, 2, mean)     # 100 promedios
+varianzas <- apply(muestras, 2, var)      # 100 varianzas muestrales
+
+# --- 3. Estimación KDE de cada muestra sobre una misma rejilla ---
+x <- seq(mu - 4 * sigma, mu + 4 * sigma, length.out = 512)
+
+K <- matrix(NA, nrow = length(x), ncol = m)   # aquí guardamos las 100 curvas
+for (j in 1:m) {
+  K[, j] <- density(muestras[, j], from = min(x), to = max(x),
+                    n = length(x))$y
+}
+
+# --- 4. Estimación (media de las curvas) y varianza de las curvas ---
+media_curvas <- rowMeans(K)              # estimación promedio del KDE
+var_curvas   <- apply(K, 1, var)         # varianza entre curvas en cada x
+
+# --- 5. Gráfico único con todo superpuesto ---
+plot(x, dnorm(x, mu, sigma), type = "l", lwd = 3, col = "black",
+     ylim = c(0, max(K, dnorm(x, mu, sigma)) * 1.05),
+     main = "Normal(10,3) teórica vs 100 KDE de muestras simuladas",
+     xlab = "x", ylab = "Densidad")
+
+# Las 100 curvas KDE en gris transparente
+for (j in 1:m) {
+  lines(x, K[, j], col = rgb(0.3, 0.3, 0.3, alpha = 0.15))
+}
+
+# Curva teórica encima (para que no se oculte)
+lines(x, dnorm(x, mu, sigma), lwd = 3, col = "black")
+
+# La estimación: promedio de las 100 curvas KDE
+lines(x, media_curvas, lwd = 2.5, col = "red")
+
+# La varianza de las curvas en eje secundario (escalada para visualizarla)
+escala <- max(dnorm(x, mu, sigma)) / max(var_curvas)
+par(new = TRUE)
+plot(x, var_curvas * escala, type = "l", lwd = 2, col = "orange",
+     axes = FALSE, xlab = "", ylab = "")
+axis(side = 4, col = "orange", col.axis = "orange")
+mtext("Varianza de las curvas KDE", side = 4, line = 3, col = "orange")
+
+legend("topright",
+       legend = c("Normal(10,3) teórica", "100 curvas KDE",
+                  "Estimación (media de KDEs)", "Varianza de las curvas"),
+       col = c("black", rgb(0.4,0.4,0.9,0.4), "red", "orange"),
+       lwd = c(3, 1, 2.5, 2), bty = "n")
+par(new = FALSE)
+
+# --- 6. Resumen numérico ---
+cat("Promedio de las medias muestrales:   ", mean(medias),    "\n")
+cat("Promedio de las varianzas muestrales:", mean(varianzas), "\n")
+cat("Máxima varianza entre curvas KDE:    ", max(var_curvas), "\n")
