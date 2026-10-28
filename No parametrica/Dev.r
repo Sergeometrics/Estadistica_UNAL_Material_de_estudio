@@ -507,3 +507,11 @@ par(new = FALSE)
 cat("Promedio de las medias muestrales:   ", mean(medias),    "\n")
 cat("Promedio de las varianzas muestrales:", mean(varianzas), "\n")
 cat("Máxima varianza entre curvas KDE:    ", max(var_curvas), "\n")
+
+
+set.seed(8)
+x=rnorm(100,10,2)
+media<-mean(x)
+des<-sd(x)
+plot(density(x))
+plot(sort(x),dnorm(sort(x),media,des),type="l",col="red",lwd=2)
