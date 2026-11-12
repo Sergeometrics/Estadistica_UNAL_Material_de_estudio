@@ -1,0 +1,1106 @@
+```markdown
+# ESTADÍSTICA NO PARAMÉTRICA: DOCUMENTO INTEGRAL DE ESTUDIO
+## Compilación Completa y Detallada de Teoría, Demostraciones, Código y Resolución de Parciales
+
+---
+
+## ÍNDICE GENERAL
+
+1. [Introducción y Conceptos Básicos](#1-introducción-y-conceptos-básicos)
+2. [Pruebas de Hipótesis No Paramétricas Clásicas](#2-pruebas-de-hipótesis-no-paramétricas-clásicas)
+3. [Estimación No Paramétrica de la Densidad (Kernel)](#3-estimación-no-paramétrica-de-la-densidad-kernel)
+4. [Métodos de Remuestreo](#4-métodos-de-remuestreo)
+5. [Modelos de Regresión No Paramétrica](#5-modelos-de-regresión-no-paramétrica)
+6. [Demostraciones Completas del Libro Hollander & Wolfe](#6-demostraciones-completas-del-libro-hollander--wolfe)
+7. [Guía de Decisión: ¿Qué Prueba Usar y Por Qué?](#7-guía-de-decisión-qué-prueba-usar-y-por-qué)
+8. [Resolución Detallada del Parcial 1 (I-2026)](#8-resolución-detallada-del-parcial-1-i-2026)
+9. [Resolución Detallada del Parcial 2 (I-2025 #2)](#9-resolución-detallada-del-parcial-2-i-2025-2)
+10. [Resolución Detallada del Parcial 3 (I-2025 #3)](#10-resolución-detallada-del-parcial-3-i-2025-3)
+11. [Apéndice de Código R Completo](#11-apéndice-de-código-r-completo)
+
+---
+
+## 1. INTRODUCCIÓN Y CONCEPTOS BÁSICOS
+
+### 1.1 ¿Qué es la Estadística No Paramétrica?
+
+La estadística no paramétrica es una rama de la estadística que no asume que los datos provienen de una distribución de probabilidad específica (como la normal). Sus procedimientos tienen propiedades que se cumplen bajo supuestos relativamente débiles sobre las poblaciones subyacentes.
+
+**Ventajas principales (Hollander & Wolfe, Sección 1.1):**
+1. Requieren pocos supuestos sobre las poblaciones.
+2. Permiten obtener valores-P exactos y intervalos de confianza exactos sin asumir normalidad.
+3. Son fáciles de aplicar y entender.
+4. Son robustos a observaciones atípicas (outliers).
+5. Son aplicables a datos ordinales (solo requieren rangos).
+6. Su eficiencia relativa es alta (cercana a 0.955 para Wilcoxon vs t-test bajo normalidad).
+
+**Propiedad libre de distribución (Distribution-Free):**
+Un estadístico es libre de distribución si su distribución bajo H₀ no depende de la forma específica de la distribución poblacional. Por ejemplo, el estadístico W de Wilcoxon-Mann-Whitney cumple: P₀(W ≤ a) no depende de F.
+
+### 1.2 Tipos de Variables y Escalas de Medida
+
+**Cualitativas:**
+- **Nominal:** Sin orden jerárquico. Ej: género, color, marca de auto, religión.
+- **Ordinal:** Con orden, pero distancias no interpretables. Ej: estrato socioeconómico (I-VI), nivel educativo (primaria, secundaria, universitario), escala de dolor (leve, moderado, severo).
+
+**Cuantitativas:**
+- **Discretas:** Valores contables. Ej: número de hijos, habitaciones, pacientes.
+- **Continuas:** Valores en un intervalo. Ej: peso, temperatura, ingreso, presión arterial.
+- **Derivadas:** Cálculos a partir de otras variables. Ej: índices, tasas, proporciones.
+
+### 1.3 Razón, Proporción y Tasa
+
+| Concepto | Definición | Ejemplo |
+| :--- | :--- | :--- |
+| **Razón** | El numerador NO forma parte del denominador | Número de hombres / número de mujeres; pacientes / camas |
+| **Proporción** | El numerador SÍ forma parte del denominador | Aprobados / presentados; recuperados / tratados |
+| **Tasa** | Razón o proporción con un período temporal | Nacidos vivos en un año / mujeres en edad fértil; casos en un período / población en riesgo |
+
+### 1.4 Pruebas Paramétricas Clásicas y sus Supuestos
+
+| Prueba | Supuestos | Hipótesis |
+| :--- | :--- | :--- |
+| **t-student una muestra** | Normalidad | μ = μ₀ |
+| **t-student pareada** | Normalidad en las diferencias | μ_D = 0 |
+| **t-student dos muestras** | Normalidad, homocedasticidad | μ₁ = μ₂ |
+| **ANOVA una vía** | Normalidad, homocedasticidad | μ₁ = ... = μₖ |
+| **ANOVA bloques** | Normalidad, homocedasticidad, no interacción | μ₁ = ... = μₖ |
+
+**Consecuencias de violar supuestos:**
+- La prueba t puede dar valores-P incorrectos (error tipo I inflado o potencia reducida).
+- El ANOVA es sensible a heterocedasticidad y no normalidad.
+- Las pruebas no paramétricas son la alternativa robusta.
+
+### 1.5 Notación O grande y o pequeña
+
+**O grande:** f(x) = O(g(x)) si existe una constante C > 0 tal que |f(x)| ≤ C|g(x)| para x suficientemente grande. Indica que f crece a lo sumo tan rápido como g.
+
+**o pequeña:** f(x) = o(g(x)) si lim_{x→∞} f(x)/g(x) = 0. Indica que f crece estrictamente más lento que g.
+
+**Propiedades:**
+- O(k f(x)) = O(f(x))
+- O(f₁) + O(f₂) = O(max(g₁, g₂))
+- O(f₁) · O(f₂) = O(g₁ · g₂)
+- (O(b))² = O(b²)
+
+**Uso en estimación de densidad:** Permite expresar el sesgo, varianza y ECM en términos del ancho de banda b o h, y determinar el orden de los términos dominantes.
+
+### 1.6 Expansión de Taylor con residuo en notación O
+
+f(x+hu) = f(x) + f'(x)hu + (1/2)f''(x)h²u² + O(h³)
+f(x-hu) = f(x) - f'(x)hu + (1/2)f''(x)h²u² + O(h³)
+
+**Uso:** Fundamental para derivar las propiedades del estimador kernel (esperanza y varianza).
+
+---
+
+## 2. PRUEBAS DE HIPÓTESIS NO PARAMÉTRICAS CLÁSICAS
+
+### 2.1 Test del Signo (Una Muestra / Pareado)
+
+**Supuestos:** La escala de medición es al menos ordinal. Las observaciones son independientes.
+
+**Hipótesis:**
+- H₀: θ = θ₀ (mediana igual a un valor específico)
+- H₁: θ ≠ θ₀, θ > θ₀, θ < θ₀
+
+**Definición de mediana:** θ es mediana si F_X(θ) = 1/2 (si X es continua) o P(X ≤ θ) ≥ 1/2 y P(X ≥ θ) ≥ 1/2 (si X es discreta).
+
+**Procedimiento:**
+1. Calcular Y_i = X_i - θ₀
+2. Definir ψ_i = 1 si Y_i > 0, 0 si Y_i < 0
+3. Estadístico S = Σψ_i ~ Bin(n, 1/2) bajo H₀
+
+**Región de rechazo:**
+- H₁: θ > θ₀ → Rechazar si S ≥ b_(1-α, 1/2)
+- H₁: θ < θ₀ → Rechazar si S ≤ n - b_(1-α, 1/2)
+- H₁: θ ≠ θ₀ → Rechazar si S ≤ n - b_(1-α/2, 1/2) o S ≥ b_(1-α/2, 1/2)
+
+**Aproximación asintótica:**
+Z = (S - n/2) / √(n/4) ~ N(0,1)
+
+**Ejemplo (bacterias en agua):**
+Datos: 41, 33, 43, 52, 46, 37, 44, 49, 53, 30. H₀: θ = 40, H₁: θ > 40
+Y_i = 1, -7, 3, 12, 3, -3, 4, 9, 13, -10
+ψ_i = 1, 0, 1, 1, 1, 0, 1, 1, 1, 0 → S = 7
+P(S ≥ 7) = 0.172 > 0.05 → No se rechaza H₀
+
+**Estimador asociado (Hodges-Lehmann):** θ̃ = mediana{X_i}
+
+**Intervalo de confianza:** Basado en los órdenes de las observaciones.
+
+### 2.2 Test de Wilcoxon de Rangos con Signo (Una Muestra / Pareado)
+
+**Supuestos:** Distribuciones simétricas y continuas.
+
+**Hipótesis:** H₀: θ = θ₀ vs H₁: θ ≠ θ₀, θ > θ₀, θ < θ₀
+
+**Procedimiento:**
+1. Y_i = X_i - θ₀
+2. Eliminar ceros (si los hay), ajustar n
+3. Ordenar |Y_i|, asignar rangos R_i (promedio si empates)
+4. ψ_i = 1 si Y_i > 0, 0 si Y_i < 0
+5. Estadístico T⁺ = Σ R_i ψ_i
+
+**Propiedades bajo H₀:**
+- E(T⁺) = n(n+1)/4
+- V(T⁺) = n(n+1)(2n+1)/24
+- Distribución simétrica alrededor de n(n+1)/4
+
+**Aproximación asintótica:**
+Z = (T⁺ - E(T⁺)) / √V(T⁺) ~ N(0,1)
+
+**Empates:** Asignar rango promedio. La varianza se reduce:
+V₀(T⁺) = (1/24)[n(n+1)(2n+1) - (1/2)Σ t_j(t_j-1)(t_j+1)]
+donde g = número de grupos con empates, t_j = tamaño del grupo j.
+
+**Ejemplo (ritmo cardíaco):**
+n=12, H₀: θ = 15. T⁺ = 14, E(T⁺) = 39, V(T⁺) = 162.5
+Z_c = (14-39)/√162.5 = -1.9611. |Z_c| < 1.645 → No se rechaza H₀
+
+**Estimador asociado (Hodges-Lehmann):** θ̂ = mediana{(Z_i + Z_j)/2, i ≤ j}
+
+**Intervalo de confianza:** Basado en las medias de Walsh ordenadas.
+
+### 2.3 Test de Wilcoxon-Mann-Whitney (Dos Muestras Independientes)
+
+**Hipótesis:**
+- H₀: F_X(t) = F_Y(t) para todo t (distribuciones iguales)
+- H₁: F_Y(t) = F_X(t - Δ) (modelo location-shift)
+
+**Procedimiento:**
+1. Combinar las N = m + n observaciones
+2. Ordenar de menor a mayor, asignar rangos (promedio si empates)
+3. W = suma de rangos de las Y's
+4. U = W - n(n+1)/2
+
+**Propiedades bajo H₀:**
+- E(W) = n(N+1)/2
+- V(W) = mn(N+1)/12
+- E(U) = mn/2
+- V(U) = mn(N+1)/12
+
+**Aproximación asintótica:**
+Z = (W - E(W)) / √V(W) ~ N(0,1)
+
+**Relación con U:** W = U + n(n+1)/2 (sin empates)
+
+**Empates:** La varianza se reduce:
+V₀(W) = (mn/12)[N+1 - Σ(t_j³ - t_j)/(N(N-1))]
+
+**Ejemplo (cabras, grupos de 15):**
+W = suma de rangos del grupo 2
+U = W - 15(16)/2
+Z_c = -0.402, p = 0.691 (two.sided) → No se rechaza H₀
+
+**Estimador asociado (Hodges-Lehmann):** Δ̂ = mediana{Y_j - X_i}
+
+### 2.4 Test de Kruskal-Wallis (k Muestras Independientes)
+
+**Hipótesis:**
+- H₀: θ₁ = θ₂ = ... = θₖ (todas las medianas iguales)
+- H₁: θ_i ≠ θ_j para algún i ≠ j
+
+**Estadístico:**
+H = [12/(N(N+1))] Σ (R_j²/n_j) - 3(N+1)
+donde N = Σn_j, R_j = suma de rangos del grupo j
+
+**Distribución:**
+- Bajo H₀: H ~ χ²_(k-1) (aproximación asintótica)
+- Exacta para muestras pequeñas (tablas)
+
+**Empates:** Corrección
+H_corr = H / [1 - Σ(t_i³ - t_i)/(N³ - N)]
+
+**Post-hoc:** Prueba de Dunn
+Rechazar H₀: θ_i = θ_j si |R_j/n_j - R_i/n_i| > Z_(1-α/2) √[N(N+1)/12 (1/n_j + 1/n_i)]
+
+**Ejemplo (hipertensión, 5 tratamientos):**
+H_c = 2.315 < χ²_(4, 0.95) = 9.49 → No se rechaza H₀
+
+### 2.5 Test de Friedman (Bloques)
+
+**Hipótesis:**
+- H₀: θ₁ = ... = θₖ (medianas iguales entre tratamientos)
+- H₁: Al menos un par difiere
+
+**Estadístico:**
+S = [12/(nk(k+1))] Σ R_j² - 3n(k+1)
+donde n = bloques, k = tratamientos
+
+**Distribución:** Bajo H₀, S ~ χ²_(k-1)
+
+**Empates:** Corrección
+S_corr = S / C, C = 1 - Σ(t_i³ - t_i)/(n(k³ - k))
+
+**Post-hoc:** Nemenyi
+|R̄_i - R̄_j| > q_(α,k,∞) / √2 * √[k(k+1)/(6n)]
+
+**Ejemplo (jueces, 10 competidores, 4 jueces):**
+R₁ = 25, R₂ = 34.5, R₃ = 14, R₄ = 26.5
+S_c = 12.81 > χ²_(3, 0.01) = 11.34 → Se rechaza H₀ (hay diferencias entre jueces)
+
+### 2.6 Test de Mack-Skillings (Bloques con Réplicas)
+
+**Extensión de Friedman para c > 1 réplicas por celda.**
+
+**Estadístico:**
+MS = [12/(k(N+n))] Σ S_j² - 3(N+n)
+donde S_j = Σ_i (1/c Σ_q r_ijq), N = nkc
+
+**Distribución:** Bajo H₀, MS ~ χ²_(k-1)
+
+**Ejemplo (niacina, 4 laboratorios, 3 bloques, 3 réplicas):**
+S₁ = 17.67, S₂ = 30.05, S₃ = 15.83, S₄ = 14
+MS = 12.93, p = 1 - pchisq(12.93, 3) = 0.0047 → Se rechaza H₀
+
+### 2.7 Correlación de Spearman (ρₛ)
+
+**Estadístico:**
+ρₛ = 1 - [6 Σ D_i²] / [n(n² - 1)] (sin empates)
+donde D_i = R(X_i) - R(Y_i)
+
+**Hipótesis:**
+- H₀: ρₛ = 0 (no hay asociación monótona)
+- H₁: ρₛ ≠ 0, ρₛ > 0, ρₛ < 0
+
+**Aproximación asintótica:**
+Z = ρₛ / √(1/(n-1)) ~ N(0,1)
+
+**Ejemplo (colágeno vs prolina):**
+n = 7, ρₛ = 0.714 (aprox), valor crítico α=5% es 0.738 → No se rechaza H₀
+
+### 2.8 Correlación de Kendall (τ)
+
+**Estadístico:**
+τ = (N_c - N_d) / [n(n-1)/2] (sin empates)
+donde N_c = pares concordantes, N_d = pares discordantes
+
+**Aproximación asintótica:**
+Z = τ / √(2(2n+5)/(9n(n-1))) ~ N(0,1)
+
+### 2.9 Pruebas de Bondad de Ajuste
+
+| Prueba | Hipótesis | Estadístico |
+| :--- | :--- | :--- |
+| **Shapiro-Wilk** | H₀: Normalidad | W = (Σ a_j(X_(n-j+1) - X_(j)))² / Σ(X_i - X̄)² |
+| **Kolmogorov-Smirnov** | H₀: F(x) = F₀(x) | D = max|S_n(x) - F₀(x)| |
+| **Lilliefors** | H₀: Normalidad (parámetros estimados) | D = max|S_n(x) - F̂₀(x)| |
+| **Chi-cuadrado** | H₀: F(x) = F₀(x) | X² = Σ(O_i - E_i)²/E_i ~ χ²_(k-p-1) |
+
+### 2.10 Tablas de Contingencia
+
+| Prueba | Tabla | Estadístico |
+| :--- | :--- | :--- |
+| **Fisher** | 2×2, marginales fijos | P(X=a) = C(a+b,a)C(c+d,c)/C(N,a+c) |
+| **McNemar** | 2×2 pareadas | X² = (b-c)²/(b+c) ~ χ²₁ |
+| **Independencia χ²** | r×c | X² = Σ(O_ij - E_ij)²/E_ij, E_ij = R_iC_j/N |
+
+---
+
+## 3. ESTIMACIÓN NO PARAMÉTRICA DE LA DENSIDAD (KERNEL)
+
+### 3.1 Función de Densidad
+
+f(x) es fdp de X si:
+- f(x) ≥ 0
+- ∫f(x)dx = 1
+- P(a < X < b) = ∫_a^b f(x)dx
+- F(x) = ∫_{-∞}^x f(t)dt
+- f(x) = F'(x)
+
+### 3.2 Estimación Histograma
+
+**Reglas para número de intervalos:**
+- **Sturges:** N = 1 + 3.32 log₁₀(n), amplitud = Rango/N
+- **Freedman-Diaconis:** Amplitud = 2 RI / n^(1/3)
+- **Scott:** Amplitud = 3.5 σ̂ / n^(1/3)
+
+**Estimador:**
+f̂_H(x) = n_j / (2nb) = (1/(2nb)) Σ I_[x-b,x+b](x_i)
+donde n_j = #x_i ∈ [x-b, x+b], 2b = amplitud
+
+**Forma Kernel:**
+f̂_H(x) = (1/(nb)) Σ K_U((x_i - x)/b), K_U(u) = 1/2 si -1 < u < 1, 0 e.o.c.
+
+**Propiedades:**
+- E(f̂_H(x)) = f(x) + O(b) (sesgo)
+- V(f̂_H(x)) = f(x)/(nb) + O(1/n)
+- ECM(f̂_H(x)) = f(x)/(nb) + O(1/n) + O(b²)
+- MISE(f̂_H) = 1/(nb) + (b²/12)R(f') + O(1/n) + O(b²)
+- AMISE(f̂_H) = 1/(nb) + (b²/12)R(f')
+- b_opt = (6/(nR(f')))^(1/3)
+- Si f ~ Normal: b = 3.491σn^(-1/3), σ̂ = RIC/1.35
+
+### 3.3 Estimador Kernel de la Densidad
+
+**Definición:**
+f̂_K(x) = (1/(nh)) Σ K((x - X_i)/h)
+donde K es el kernel, h es el ancho de banda
+
+**Kernels comunes:**
+- **Gaussiano:** K(u) = (1/√(2π)) exp(-u²/2), R(K) = 1/(2√π), σ_K² = 1
+- **Epanechnikov:** K(u) = (3/4)(1-u²)I_[-1,1](u), R(K) = 3/5, σ_K² = 1/5
+- **Biweight:** K(u) = (15/16)(1-u²)²I_[-1,1](u), R(K) = 5/7, σ_K² = 1/7
+- **Uniforme:** K(u) = (1/2)I_[-1,1](u), R(K) = 1/2, σ_K² = 1/3
+
+**Relación con histograma:** Con K uniforme y h=b, f̂_K = f̂_H
+
+### 3.4 Propiedades del Estimador Kernel
+
+**Esperanza (sesgo):**
+E(f̂_K(x)) = ∫K(u)f(x+hu)du
+Expansión de Taylor: f(x+hu) = f(x) + f'(x)hu + (1/2)f''(x)h²u² + O(h³)
+E(f̂_K(x)) = f(x) + (1/2)f''(x)h²σ_K² + O(h³) ≈ f(x) + (f''(x)σ_K²h²)/2
+
+**Varianza:**
+V(f̂_K(x)) = (1/n)[E(K_h²(x-X)) - (E(K_h(x-X)))²]
+E(K_h²(x-X)) = (1/h)∫K²(u)f(x+hu)du ≈ f(x)R(K)/h
+V(f̂_K(x)) ≈ f(x)R(K)/(nh)
+
+**ECM puntual:**
+ECM(f̂_K(x)) = V + Sesgo² = f(x)R(K)/(nh) + [(f''(x)σ_K²h²)/2]²
+
+**MISE:**
+MISE(f̂_K) = ∫ECM dx = R(K)/(nh) + (σ_K⁴h⁴/4)R(f'')
+donde R(f'') = ∫(f''(x))²dx
+Si f ~ Normal: R(f'') = 3/(8σ⁵√π)
+
+**AMISE:**
+AMISE(f̂_K) = R(K)/(nh) + (σ_K⁴h⁴/4)R(f'')
+
+**h óptimo:**
+∂AMISE/∂h = -R(K)/(nh²) + σ_K⁴h³R(f'') = 0
+h_opt = [R(K)/(nσ_K⁴R(f''))]^(1/5)
+
+**h de referencia a la normal:**
+Con K gaussiano (σ_K²=1, R(K)=1/(2√π)) y f normal (R(f'')=3/(8σ⁵√π)):
+h_opt = [(1/(2√π))/(n·1·3/(8σ⁵√π))]^(1/5) = (4σ⁵/(3n))^(1/5) = (4/3)^(1/5)σn^(-1/5) ≈ 1.059σn^(-1/5)
+
+**Regla de Silverman:**
+h_S = 0.9 min(σ̂, RIC/1.34) n^(-1/5)
+
+**Otras reglas:**
+- **UCV (Validación Cruzada):** bw.ucv()
+- **Sheather-Jones:** bw.SJ()
+
+### 3.5 Convolución
+
+Si X ~ f_X y Y ~ f_Y independientes, Z = X+Y:
+f_Z(z) = ∫f_Y(z-x)f_X(x)dx = ∫f_X(z-y)f_Y(y)dy
+
+**Ejemplo:** X ~ N(0,1), Y ~ N(0,1) → Z ~ N(0,2)
+
+### 3.6 Kernel Re-escalado
+
+K_h(u) = (1/h)K(u/h)
+Varianza re-escalada: σ_Kh = σ_K · h
+
+**Ejemplo:** x=5, x_i=4, h=3, K gaussiano
+(1/3)K((5-4)/3) = (1/3)dnorm(1/3, 0, 1) = dnorm(1, 0, 3)
+
+### 3.7 Inferencia basada en Kernel
+
+**IC para E(f̂_K(x)) usando Método Delta:**
+√f̂_K(x) ~ N(√E(f̂_K(x)), R(K)/(4nh))
+IC 100(1-α)% para √E(f̂_K(x)): [√f̂_K(x) ± Z_(α/2)√(R(K)/(4nh))]
+IC para E(f̂_K(x)): elevar al cuadrado los límites
+
+**Bandas de referencia a la normal:**
+Bajo H₀ (normalidad), E(f̂_K(x)) y V(f̂_K(x)) tienen expresiones cerradas:
+E(f̂_K(x)) = φ(x; μ̂, σ̂² + h²)
+V(f̂_K(x)) = (1/n)[φ(0; 0, 2h²)φ(x; μ̂, σ̂² + h²/2) - (φ(x; μ̂, σ̂² + h²))²]
+Bandas: E(f̂_K(x)) ± Z_(α/2)√V(f̂_K(x))
+Si la curva estimada sale de las bandas → rechazar normalidad
+
+**Test NISE:**
+T_c = ∫(f̂_K(x*) - φ(x*; 0,1))²dx, con x* = (x - μ̂)/σ̂
+Bajo H₀, simular T₁,...,T_B de N(μ̂, σ̂²)
+p-valor = #(T_b > T_c)/B
+Rechazar H₀ si p-valor < α
+
+**Test de igualdad de distribuciones:**
+H₀: f_X(x) = f_Y(y)
+T_c = ∫(f̂_X(u) - f̂_Y(u))²du
+Bajo H₀, permutar etiquetas, calcular T₁,...,T_B
+p-valor = #(T_b > T_c)/B
+
+**Test de independencia:**
+H₀: f(x,y) = f(x)f(y)
+T = (1/n)Σlog[f̂(x_i,y_i)/(f̂(x_i)f̂(y_i))]
+Bajo H₀, permutar y, calcular T₁,...,T_B
+p-valor = #(T_b > T_c)/B
+
+---
+
+## 4. MÉTODOS DE REMUESTREO
+
+### 4.1 Bootstrap
+
+**Procedimiento:**
+1. Generar B muestras bootstrap (con reemplazo) de tamaño n
+2. Calcular θ̂*_b para cada muestra
+3. Sesgo_boot = (1/B)Σθ̂*_b - θ̂
+4. V_boot = (1/(B-1))Σ(θ̂*_b - θ̄*)²
+
+**IC normal:**
+[θ̂ - Sesgo_boot ± Z_(α/2)√V_boot]
+
+**IC percentil:**
+[θ̂*_(α/2), θ̂*_(1-α/2)]
+
+**Ejemplo (mediana de Gamma(3,2), n=100):**
+Ver código R en Apéndice.
+
+### 4.2 Jackknife
+
+**Procedimiento:**
+1. Calcular θ̂_(-i) (estimador sin la i-ésima observación)
+2. θ̄_n = (1/n)Σθ̂_(-i)
+3. θ̂_jack = nθ̂ - (n-1)θ̄_n
+4. Sesgo_jack = (n-1)(θ̄_n - θ̂)
+5. V_jack = ((n-1)/n)Σ(θ̂_(-i) - θ̄_n)²
+
+**Pseudo-valores de Tukey:**
+θ̃_i = nθ̂ - (n-1)θ̂_(-i)
+θ̂_jack = (1/n)Σθ̃_i
+
+**IC:**
+[θ̂_jack ± t_(n-1, 1-α/2)√V_jack]
+
+**Ejemplo (coeficiente de variación de Gamma(3,2), n=100):**
+Ver código R en Apéndice.
+
+### 4.3 Pruebas de Permutación
+
+**Procedimiento:**
+1. Calcular T_c con etiquetas originales
+2. Permutar etiquetas B veces, calcular T_b
+3. p-valor = #(T_b > T_c)/B (o bilateral: #(|T_b| > |T_c|)/B)
+
+**Ejemplo (diferencia de medianas):**
+Ver código R en Apéndice.
+
+### 4.4 Simulación Monte Carlo
+
+**Procedimiento:**
+1. Conocer F_θ
+2. Generar B muestras de F_θ
+3. Calcular T_b = g(X_b)
+4. Usar {T_b} para aproximar cuantiles, varianzas, potencia, etc.
+
+**Ejemplo (distribución de S² para Gamma(3,2), n=100):**
+Ver código R en Apéndice.
+
+### 4.5 Validación Cruzada
+
+**LOOCV:**
+Para cada i, quitar (x_i,y_i), entrenar modelo, predecir ŷ_i, calcular ECM = (1/n)Σ(y_i - ŷ_i)²
+
+**K-fold:**
+Dividir en K bloques, para cada k entrenar con K-1 bloques, predecir en el bloque k, promediar ECM
+
+**Repeated K-fold:**
+Repetir K-fold varias veces con particiones diferentes
+
+---
+
+## 5. MODELOS DE REGRESIÓN NO PARAMÉTRICA
+
+### 5.1 Regresión KNN
+
+f̂(x₀) = (1/K)Σ_{x_i∈N₀} y_i
+donde N₀ = K observaciones más cercanas a x₀
+
+**Elección de K:** Por validación cruzada, balance sesgo-varianza
+
+### 5.2 Regresión Kernel
+
+m̂(x) = Σw_i y_i, w_i = K((x-x_i)/h) / ΣK((x-x_j)/h)
+
+**Bandas de variabilidad:**
+m̂(x) ± Z_(α/2)√(σ̂²Σw_i²)
+
+**Test de ausencia de efectos:**
+H₀: m(x) = μ_Y
+F_kernel = [(SCE₀ - SCE₁)/(gl₀ - gl₁)] / [SCE₁/gl₁]
+Distribución por permutaciones
+
+**Test de linealidad:**
+H₀: m(x) = β₀ + β₁x
+Banda: β̂ᵀx ± Z_(α/2)√(σ̂²Σ(w_j - h_ij)²)
+
+**ANCOVA no paramétrico (igualdad de 2 curvas):**
+H₀: m₁(x) = m₂(x)
+Z = (m̂₁(x) - m̂₂(x)) / √(V(m̂₁) + V(m̂₂))
+Bandas: m̂(x) ± Z_(α/2)√(V(m̂₁) + V(m̂₂))
+
+### 5.3 Polinomios Locales (LOESS/LOWESS)
+
+**LOESS:** Regresión polinomial centrada local
+**LOWESS:** LOESS ponderado
+
+**Elección de span:** Por validación cruzada, ECMP
+
+### 5.4 Regresión Spline
+
+**Spline lineal con k nudos:**
+y = β₀ + β₁x + Σb_j(x-a_j)₊ + ε
+
+**Spline cúbico con k nudos:**
+y = β₀ + β₁x + β₂x² + β₃x³ + Σb_j(x-a_j)₊³ + ε
+
+**Nudos:** Igualmente espaciados o por cuantiles
+
+**Bandas de confianza:**
+f̂(x) ± Z_(α/2)σ̂√(b(x)ᵀ(BᵀB)⁻¹b(x))
+
+### 5.5 Modelos Aditivos (MA) y GAM
+
+**MA:** Y = β₀ + Σf_j(X_j) + ε
+**GAM:** g(μ) = α + Σf_j(X_j)
+
+**Backfitting:**
+1. Inicializar f_j = 0
+2. Para cada j: calcular residuos parciales R_ij = Y_i - α - Σ_{k≠j}f_k(X_ik), suavizar f_j = S_j(R_·j), centrar f_j
+3. Repetir hasta convergencia
+
+### 5.6 Otros Modelos
+
+- **Árboles de regresión:** Particiones recursivas, minimizar SSE
+- **Random Forest:** Bagging + aleatoriedad en variables
+- **SVR:** Pérdida ε-insensible, kernels
+- **Boosting:** Modelos aditivos de árboles débiles
+
+---
+
+## 6. DEMOSTRACIONES COMPLETAS DEL LIBRO HOLLANDER & WOLFE
+
+### 6.1 Demostración: E(T⁺) = n(n+1)/4 y V(T⁺) = n(n+1)(2n+1)/24
+
+**Método:** Variables indicadoras V_i
+
+Definir V_i = i si la observación con rango i es positiva, 0 si es negativa.
+Bajo H₀: P(V_i = i) = 1/2, P(V_i = 0) = 1/2
+T⁺ = ΣV_i
+
+**Esperanza:**
+E(V_i) = i(1/2) + 0(1/2) = i/2
+E(T⁺) = ΣE(V_i) = Σi/2 = (1/2)[n(n+1)/2] = n(n+1)/4 ✓
+
+**Varianza:**
+E(V_i²) = i²(1/2) + 0²(1/2) = i²/2
+V(V_i) = E(V_i²) - [E(V_i)]² = i²/2 - (i/2)² = i²/4
+V(T⁺) = ΣV(V_i) = Σi²/4 = (1/4)[n(n+1)(2n+1)/6] = n(n+1)(2n+1)/24 ✓
+
+### 6.2 Demostración: T⁺ + T⁻ = n(n+1)/2
+
+T⁺ = ΣR_iψ_i, T⁻ = ΣR_i(1-ψ_i)
+T⁺ + T⁻ = ΣR_i[ψ_i + (1-ψ_i)] = ΣR_i = 1+2+...+n = n(n+1)/2 ✓
+
+### 6.3 Demostración: E(W) = n(N+1)/2, V(W) = mn(N+1)/12
+
+**Método:** Muestreo sin reemplazo de población finita
+
+Bajo H₀, los rangos de las Y's son una muestra aleatoria de tamaño n de {1,2,...,N}.
+μ_pop = (N+1)/2
+σ²_pop = (N²-1)/12 = (N-1)(N+1)/12
+
+E(W/n) = μ_pop = (N+1)/2 → E(W) = n(N+1)/2 ✓
+V(W/n) = (σ²_pop/n)((N-n)/(N-1)) = [(N+1)(N-1)/(12n)] [(N-n)/(N-1)] = m(N+1)/(12n)
+V(W) = n² V(W/n) = mn(N+1)/12 ✓
+
+### 6.4 Demostración: Relación W = U + n(n+1)/2
+
+R(Y_j) = #X's < Y_j + #Y's < Y_j + 1
+ΣR(Y_j) = Σ_iΣ_j φ(X_i,Y_j) + Σ_jΣ_j' φ(Y_j',Y_j) + n
+El primer término es U, el segundo es 0+1+...+(n-1) = n(n-1)/2
+W = U + n(n-1)/2 + n = U + n(n+1)/2 ✓
+
+### 6.5 Demostración: R(f'') = 3/(8σ⁵√π)
+
+f(x) = (1/(σ√(2π))) exp(-(x-μ)²/(2σ²))
+z = (x-μ)/σ, dx = σdz
+
+f'(x) = -(z/σ)f(x)
+f''(x) = ((z²-1)/σ²)f(x) = ((z²-1)/(σ²)) (1/(σ√(2π))) e^(-z²/2)
+
+R(f'') = ∫(f''(x))²dx = (1/(σ⁵2π)) ∫(z²-1)²e^(-z²)dz
+= (1/(σ⁵2π)) [∫z⁴e^(-z²)dz - 2∫z²e^(-z²)dz + ∫e^(-z²)dz]
+= (1/(σ⁵2π)) [(3√π/4) - 2(√π/2) + √π]
+= (1/(σ⁵2π)) [3√π/4] = 3/(8σ⁵√π) ✓
+
+### 6.6 Demostración: h óptimo = 1.059σn^(-1/5)
+
+AMISE = R(K)/(nh) + (σ_K⁴h⁴/4)R(f'')
+∂AMISE/∂h = -R(K)/(nh²) + σ_K⁴h³R(f'') = 0
+h_opt = [R(K)/(nσ_K⁴R(f''))]^(1/5)
+
+Con K gaussiano (σ_K²=1, R(K)=1/(2√π)) y f normal (R(f'')=3/(8σ⁵√π)):
+h_opt = [(1/(2√π))/(n·1·3/(8σ⁵√π))]^(1/5) = (4σ⁵/(3n))^(1/5) = (4/3)^(1/5)σn^(-1/5) ≈ 1.059σn^(-1/5) ✓
+
+### 6.7 Demostración: Varianza del Estimador Kernel (para normal)
+
+V(f̂_K(x)) = (1/n)[φ(x; μ, σ²+2h²) - (φ(x; μ, σ²+h²))²]
+
+**Demostración (esbozo):**
+V(f̂_K(x)) = (1/n)[E(K_h²(x-X)) - (E(K_h(x-X)))²]
+Para X ~ N(μ, σ²) y K gaussiano:
+E(K_h(x-X)) = φ(x; μ, σ²+h²)
+E(K_h²(x-X)) = φ(x; μ, σ²+2h²) (usando convolución)
+Sustituyendo se obtiene el resultado. ✓
+
+---
+
+## 7. GUÍA DE DECISIÓN: ¿QUÉ PRUEBA USAR Y POR QUÉ?
+
+### 7.1 Árbol de Decisión
+
+**Pregunta 1:** ¿Cuál es el diseño?
+- Una muestra / pareado → Test del Signo o Wilcoxon Rangos con Signo
+- Dos grupos independientes → t-test o Wilcoxon-Mann-Whitney
+- k grupos independientes → ANOVA o Kruskal-Wallis
+- k tratamientos en bloques → ANOVA bloques o Friedman
+- Asociación entre 2 variables → Pearson o Spearman/Kendall
+- Bondad de ajuste → Shapiro-Wilk, KS, Lilliefors, Chi-cuadrado
+
+**Pregunta 2:** ¿Se cumplen los supuestos?
+- Normalidad → Sí: paramétrico; No: no paramétrico
+- Homocedasticidad → Sí: paramétrico; No: no paramétrico
+- Independencia → Sí: paramétrico; No: no paramétrico
+
+### 7.2 Tabla Comparativa
+
+| Objetivo | Paramétrica (si supuestos) | No Paramétrica (si no supuestos) | ¿Por qué elegir NP? |
+| :--- | :--- | :--- | :--- |
+| Una muestra | t-test | **Wilcoxon Rangos con Signo** | No normalidad, robustez a outliers |
+| Dos grupos indep. | t-test indep. | **Wilcoxon-Mann-Whitney** | No normalidad, no homocedasticidad |
+| k grupos indep. | ANOVA | **Kruskal-Wallis** | No normalidad, no homocedasticidad |
+| k tratamientos bloques | ANOVA bloques | **Friedman** | No normalidad, controla efecto bloque |
+| Asociación | Pearson | **Spearman/Kendall** | Relaciones monótonas, robustez |
+| Bondad de ajuste | — | **Shapiro-Wilk, KS, etc.** | Probar normalidad |
+
+### 7.3 ¿Por qué NO usar paramétrico?
+
+- Datos no normales (asimetría, outliers)
+- Muestras pequeñas sin garantía de normalidad
+- Datos ordinales (no se puede calcular media significativa)
+- Varianzas muy dispares (heterocedasticidad)
+
+### 7.4 ¿Por qué SÍ usar paramétrico?
+
+- Datos normales (verificado con Shapiro-Wilk, QQ-plot)
+- Muestras grandes (TCL)
+- Mayor potencia (ligeramente superior bajo normalidad)
+
+### 7.5 Eficiencia Relativa Asintótica (ARE)
+
+- Wilcoxon vs t-test: ARE ≥ 0.864 (siempre); = 0.955 bajo normalidad
+- Sign test vs t-test: ARE ≥ 1/3; = 0.637 bajo normalidad
+- Kruskal-Wallis vs ANOVA: similar a Wilcoxon
+
+### 7.6 Ejemplos de Decisión
+
+**Ejemplo 1:** Comparar tiempos de recuperación en dos grupos independientes, datos asimétricos.
+→ Wilcoxon-Mann-Whitney (no t-test).
+
+**Ejemplo 2:** Medir dolor antes/después en el mismo paciente, escala ordinal 1-10.
+→ Wilcoxon de Rangos con Signo (no t-test pareado).
+
+**Ejemplo 3:** Comparar 4 fertilizantes en parcelas independientes, datos no normales.
+→ Kruskal-Wallis (no ANOVA).
+
+**Ejemplo 4:** 5 jueces califican a 10 competidores, datos ordinales.
+→ Friedman (no ANOVA de bloques).
+
+**Ejemplo 5:** Relación entre colesterol y presión arterial, datos con outliers.
+→ Spearman o Kendall (no Pearson).
+
+---
+
+## 8. RESOLUCIÓN DETALLADA DEL PARCIAL 1 (I-2026)
+
+### 8.1 Punto 1: Teoría (40%)
+
+**1. Demuestre que f̂_H(x) = f̂_K(x), con K(u) = 1/2, u ∈ [-1,1]**
+
+f̂_H(x) = (1/(nb)) Σ (1/2) I_[-1,1]((x_i-x)/b)
+f̂_K(x) = (1/(nh)) Σ K((x-x_i)/h)
+Con K(u) = (1/2)I_[-1,1](u) y h=b:
+f̂_K(x) = (1/(nb)) Σ (1/2) I_[-1,1]((x-x_i)/b) = f̂_H(x) ✓
+
+**2. Demuestre que E(f̂_K(x)) ≈ f(x) + f''(x)σ_K²h²/2**
+
+E(f̂_K(x)) = ∫(1/h)K((x-t)/h)f(t)dt
+u = (x-t)/h, t = x-hu, dt = -hdu
+= ∫K(u)f(x-hu)du
+Taylor: f(x-hu) = f(x) - f'(x)hu + (1/2)f''(x)h²u² + O(h³)
+= f(x)∫K(u)du - f'(x)h∫uK(u)du + (1/2)f''(x)h²∫u²K(u)du + O(h³)
+= f(x) + 0 + (1/2)f''(x)h²σ_K² + O(h³) ✓
+
+**3. Demuestre que V(f̂_K(x)) ≈ f(x)R(K)/(nh)**
+
+V(f̂_K(x)) = (1/n²)ΣV((1/h)K((x-X_i)/h)) = (1/n)V((1/h)K((x-X)/h))
+= (1/n)[E((1/h²)K²((x-X)/h)) - (E((1/h)K((x-X)/h)))²]
+E((1/h²)K²((x-X)/h)) = ∫(1/h²)K²((x-t)/h)f(t)dt = (1/h)∫K²(u)f(x-hu)du ≈ f(x)R(K)/h
+V ≈ (1/n)(f(x)R(K)/h) = f(x)R(K)/(nh) ✓
+
+**4. Deduzca MISE, AMISE, h óptimo, h referencia normal**
+
+MISE = ∫[V + Sesgo²]dx = ∫[f(x)R(K)/(nh) + (f''(x)σ_K²h²/2)²]dx
+= R(K)/(nh) + (σ_K⁴h⁴/4)R(f'')
+
+AMISE = R(K)/(nh) + (σ_K⁴h⁴/4)R(f'')
+
+h_opt: ∂AMISE/∂h = -R(K)/(nh²) + σ_K⁴h³R(f'') = 0
+h_opt = [R(K)/(nσ_K⁴R(f''))]^(1/5)
+
+Con K gaussiano y f normal: h_opt = 1.059σn^(-1/5)
+
+**5. Demuestre IC para √E(f̂(x)) y dé IC para E(f̂(x))**
+
+Método Delta: g(t) = √t, g'(t) = 1/(2√t)
+√f̂_K(x) ~ N(√E(f̂_K(x)), (1/(4E(f̂_K(x))))·(f(x)R(K)/(nh)))
+≈ N(√E(f̂_K(x)), R(K)/(4nh)) (asumiendo E≈f)
+IC: [√f̂_K(x) ± Z_(α/2)√(R(K)/(4nh))]
+IC para E(f̂(x)): [(√f̂_K(x) - Z√(R(K)/(4nh)))², (√f̂_K(x) + Z√(R(K)/(4nh)))²]
+
+### 8.2 Punto 2: Análisis de datos simulados (40%)
+
+Ver código R completo en Sección 11.
+
+### 8.3 Punto 3: Análisis de datos reales (20%)
+
+Test de igualdad de distribuciones (salinidad superficie vs fondo) usando sm.density.compare.
+
+---
+
+## 9. RESOLUCIÓN DETALLADA DEL PARCIAL 2 (I-2025 #2)
+
+### 9.1 Punto 1: Simulación y Estimación de Densidad
+
+**a) Regla de Silverman:** h = bw.nrd0(datos)
+**b) AMISE:** (R(K)/(n h)) + (h⁴σ_K⁴R(f''))/4
+**c) Estimación en mínimo e IC:** f̂(x_min) ± 1.96√(f̂(x_min)R(K)/(n h))
+**d) Regla de referencia normal:** h_ref = 1.059 s n^(-1/5)
+**e) Bandas de referencia:** sm.density(datos, model="normal", display="se")
+**f) Test NISE:** nise(datos), simular bajo H₀, p-valor
+
+### 9.2 Punto 2: Demostración R(f'')
+
+R(f'') = 3/(8σ⁵√π) (ver Sección 6.5)
+
+### 9.3 Punto 3: h óptimo = 1.059σn^(-1/5)
+
+(ver Sección 6.6)
+
+### 9.4 Punto 4: Varianza del Estimador Kernel
+
+V(f̂_K(x)) = (1/n)[φ(x; μ, σ²+2h²) - (φ(x; μ, σ²+h²))²] (para normal)
+
+### 9.5 Punto 5: Test de Igualdad de Densidades
+
+sm.density.compare(X, Y, model="equal") o ks.test()
+
+---
+
+## 10. RESOLUCIÓN DETALLADA DEL PARCIAL 3 (I-2025 #3)
+
+### 10.1 Punto 1 (30%): Jackknife
+
+**Propiedad:** Mediana θ̂ = median(X)
+**Procedimiento:**
+θ̂_(-i) = median(X[-i])
+θ̄_n = mean(θ̂_(-i))
+θ̂_jack = nθ̂ - (n-1)θ̄_n
+Sesgo_jack = (n-1)(θ̄_n - θ̂)
+V_jack = ((n-1)/n)Σ(θ̂_(-i) - θ̄_n)²
+IC: θ̂_jack ± t_(n-1,0.975)√V_jack
+
+### 10.2 Punto 2 (20%): Bootstrap
+
+**Procedimiento:**
+θ̂*_b = median(sample(X, n, replace=TRUE))
+Sesgo_boot = mean(θ̂*) - θ̂
+V_boot = var(θ̂*)
+IC percentil: quantile(θ̂*, c(0.025, 0.975))
+IC normal: θ̂ - Sesgo_boot ± 1.96√V_boot
+
+### 10.3 Punto 3 (5%): Comparación
+
+- Jackknife: determinista, rápido, asume normalidad del estimador
+- Bootstrap: flexible, robusto, no asume normalidad (percentil), más cómputo
+- Para mediana: Bootstrap percentil suele ser mejor
+
+### 10.4 Punto 4 (10%): Wilcoxon-Mann-Whitney
+
+**Recomendación:** Test de Wilcoxon-Mann-Whitney para dos grupos independientes no normales.
+**Código R:** wilcox.test(grupo_A, grupo_B, alternative="two.sided")
+**Conclusión:** p-valor < 0.05 → rechazar H₀
+
+### 10.5 Punto 5 (35%): Ejercicio Hollander & Wolfe p.50
+
+**Procedimiento:**
+1. Ejecutar set.seed(código); sample(1:17, 1) para obtener número de problema
+2. Buscar problema en libro p.50 (Test de Wilcoxon de Rangos con Signo)
+3. Resolver a mano y en R
+4. Crear tabla: i, Z_i, |Z_i|, R_i, ψ_i, R_iψ_i
+5. Calcular T⁺, E(T⁺), V(T⁺), Z_c, p-valor
+
+**Ejemplo (Problema 3):** T⁺ + T⁻ = n(n+1)/2 (ver Sección 6.2)
+
+---
+
+## 11. APÉNDICE DE CÓDIGO R COMPLETO
+
+### 11.1 Bootstrap (IC para mediana)
+
+```r
+set.seed(14)
+n <- 100
+x <- rgamma(n, shape=3, rate=2)
+theta_hat <- median(x)
+B <- 1000
+theta_boot <- replicate(B, median(sample(x, n, replace=TRUE)))
+sesgo_boot <- mean(theta_boot) - theta_hat
+var_boot <- var(theta_boot)
+IC_perc <- quantile(theta_boot, c(0.025, 0.975))
+IC_norm <- c(theta_hat - sesgo_boot - 1.96*sqrt(var_boot),
+             theta_hat - sesgo_boot + 1.96*sqrt(var_boot))
+```
+
+### 11.2 Jackknife (CV de Gamma)
+
+```r
+set.seed(8)
+n <- 1000
+y <- rgamma(n, shape=3, rate=2)
+cv <- function(z) sd(z)/mean(z)
+theta_hat <- cv(y)
+theta_menos_i <- sapply(1:n, function(i) cv(y[-i]))
+theta_barra <- mean(theta_menos_i)
+theta_jack <- n*theta_hat - (n-1)*theta_barra
+sesgo_jack <- (n-1)*(theta_barra - theta_hat)
+var_jack <- ((n-1)/n)*sum((theta_menos_i - theta_barra)^2)
+IC_jack <- c(theta_jack - qt(0.975, n-1)*sqrt(var_jack),
+             theta_jack + qt(0.975, n-1)*sqrt(var_jack))
+```
+
+### 11.3 Permutaciones (diferencia de medianas)
+
+```r
+set.seed(8)
+n <- 50
+muestra1 <- rnorm(n, 20, 2)
+muestra2 <- rnorm(n, 20, 2)
+Tc <- abs(median(muestra1) - median(muestra2))
+T <- numeric(1000)
+for(i in 1:1000){
+  muestras <- c(muestra1, muestra2)
+  grupo <- sample(rep(c(1,2), each=n))
+  medianas <- tapply(muestras, grupo, median)
+  T[i] <- abs(medianas[1] - medianas[2])
+}
+p_valor <- mean(T > Tc)
+```
+
+### 11.4 Histograma y Kernel
+
+```r
+set.seed(123)
+n <- 100; mu <- 50; sigma <- 10
+datos <- rnorm(n, mu, sigma)
+hist(datos, breaks="Sturges", freq=FALSE)
+dens <- density(datos, kernel="gaussian")
+bw_opt <- bw.nrd0(datos)
+dens_opt <- density(datos, kernel="gaussian", bw=bw_opt)
+```
+
+### 11.5 Test de Normalidad (Bandas y NISE)
+
+```r
+library(sm); library(bde)
+datos <- rnorm(100, 30, 4)
+sm.density(datos, model="normal", display="se")
+T_obs <- nise(datos)
+mu_est <- mean(datos); sigma_est <- sd(datos)
+T_sim <- replicate(1000, nise(rnorm(100, mu_est, sigma_est)))
+p_valor <- mean(T_sim > T_obs)
+```
+
+### 11.6 Test de Igualdad de Distribuciones (Kernel)
+
+```r
+library(sm)
+X <- rnorm(100, 10, 2)
+Y <- rnorm(100, 12, 2)
+datos <- c(X, Y)
+grupo <- rep(1:2, each=100)
+sm.density.compare(datos, grupo, model="equal")
+```
+
+### 11.7 Test de Independencia (Kernel)
+
+```r
+indep_test <- function(x, y, B=1000, bw_x=NULL, bw_y=NULL) {
+  n <- length(x)
+  if(is.null(bw_x)) bw_x <- bw.nrd0(x)
+  if(is.null(bw_y)) bw_y <- bw.nrd0(y)
+  Kx <- dnorm(outer(x, x, "-")/bw_x)/((n-1)*bw_x)
+  Ky <- dnorm(outer(y, y, "-")/bw_y)/((n-1)*bw_y)
+  diag(Kx) <- 0; diag(Ky) <- 0
+  fx <- rowSums(Kx); fy <- rowSums(Ky)
+  fxy <- rowSums(Kx*Ky)
+  T_obs <- mean(log(fxy/pmax(fx*fy, 1e-10)))
+  T_null <- numeric(B)
+  for(b in 1:B){
+    p <- sample.int(n)
+    Ky_p <- Ky[,p]
+    fy_b <- rowSums(Ky_p)
+    fxy_b <- rowSums(Kx*Ky_p)
+    T_null[b] <- mean(log(fxy_b/pmax(fx*fy_b, 1e-10)))
+  }
+  p_val <- mean(abs(T_null) >= abs(T_obs))
+  return(list(stat=T_obs, p_value=p_val))
+}
+```
+
+### 11.8 Wilcoxon-Mann-Whitney
+
+```r
+grup01 <- c(80,82,91,100,76,85,88,55,69,88,75,97,81,65,97)
+grup02 <- c(72,86,99,79,100,83,84,93,89,85,47,88,76,94,82)
+wilcox.test(grup01, grup02, alternative="two.sided")
+t.test(grup01, grup02, alternative="two.sided", var.equal=TRUE)
+```
+
+### 11.9 Test de Wilcoxon de Rangos con Signo
+
+```r
+Z <- c(-0.952, 0.147, -1.022, -0.430, -0.620, -0.590, -0.490, 0.080, -0.010)
+wilcox.test(Z, mu=0, alternative="two.sided")
+abs_Z <- abs(Z)
+rangos <- rank(abs_Z)
+positivos <- Z > 0
+T_plus <- sum(rangos[positivos])
+```
+
+### 11.10 Test de Kruskal-Wallis
+
+```r
+control <- c(180,173,175,182,181)
+bajasal <- c(172,158,167,160,175)
+sinsal <- c(163,170,158,162,170)
+dosis1 <- c(158,146,160,171,155)
+dosis2 <- c(147,152,143,155,160)
+grupo <- factor(rep(c("Control","BajaSal","SinSal","Dosis1","Dosis2"), each=5))
+presion <- c(control, bajasal, sinsal, dosis1, dosis2)
+kruskal.test(presion ~ grupo)
+```
+
+### 11.11 Test de Friedman
+
+```r
+datos <- matrix(c(...), nrow=n, ncol=k)
+friedman.test(datos)
+```
+
+### 11.12 Test de Mack-Skillings
+
+```r
+# MS = (12/(k*(N+n))) * sum(S^2) - 3*(N+n)
+# p_val = 1 - pchisq(MS, df=k-1)
+```
+
+### 11.13 Correlación de Spearman y Kendall
+
+```r
+cor.test(x, y, method="spearman")
+cor.test(x, y, method="kendall")
+```
+
+### 11.14 Bondad de Ajuste
+
+```r
+shapiro.test(x)
+ks.test(x, "pnorm", mean=0, sd=1)
+lillie.test(x)  # library(nortest)
+chisq.test(obs, p=prob)
+```
+
+### 11.15 Tablas de Contingencia
+
+```r
+fisher.test(matrix(c(12,7,2,9), 2))
+mcnemar.test(matrix(c(918,253,319,11033), 2, byrow=TRUE), correct=TRUE)
+chisq.test(rbind(c(543,211,90,476), c(44,22,8,31), c(28,9,7,31)))
+```
+
+### 11.16 Regresión KNN
+
+```r
+library(FNN)
+pred_knn <- knn.reg(train=X, test=X_grid, y=Y, k=5)
+```
+
+### 11.17 Regresión Kernel
+
+```r
+library(sm)
+sm.regression(x, y, model="none", h=1)
+sm.regression(x, y, model="no effect")
+sm.regression(x, y, model="linear")
+sm.ancova(x, y, group, model="equal")
+```
+
+### 11.18 LOESS / LOWESS
+
+```r
+modelo_loess <- loess(y ~ x, span=0.30, degree=2)
+ajuste_lowess <- lowess(x, y, f=0.30)
+```
+
+### 11.19 Splines
+
+```r
+library(splines)
+modelo <- lm(y ~ bs(x, knots=c(3,6,8), degree=3))
+modelo <- lm(y ~ x + I(x^2) + I(x^3) +
+              I(pmax(x-knots[1],0)^3) + I(pmax(x-knots[2],0)^3))
+```
+
+### 11.20 GAM
+
+```r
+library(mgcv)
+m_am <- gam(y ~ s(x1, k=10) + s(x2, k=10) + x3, data=dat, method="REML")
+summary(m_am)
+gam.check(m_am)
+concurvity(m_am)
+plot(m_am, shade=TRUE, scale=0)
+```
+
+### 11.21 Validación Cruzada
+
+```r
+library(caret)
+train.control <- trainControl(method="LOOCV")
+model <- train(y ~ ., data=datos, method="lm", trControl=train.control)
+
+train.control <- trainControl(method="cv", number=10)
+model <- train(y ~ ., data=datos, method="lm", trControl=train.control)
+
+train.control <- trainControl(method="repeatedcv", number=10, repeats=3)
+model <- train(y ~ ., data=datos, method="lm", trControl=train.control)
+```
+
+---
+
+## FIN DEL DOCUMENTO
+
+Este documento compila de manera exhaustiva todos los temas, demostraciones, código y análisis discutidos en el chat, cubriendo la totalidad de los documentos proporcionados (scripts R, PDFs de clase, libro Hollander & Wolfe y los tres parciales resueltos).
+
+**Eje central del curso:** Capítulo 3 (Estimación No Paramétrica de la Densidad Kernel).
+**Temas secundarios:** Remuestreo (Jackknife/Bootstrap), Pruebas clásicas (Wilcoxon, Mann-Whitney, Kruskal-Wallis, Friedman).
+**Habilidades evaluadas:** Demostraciones teóricas, implementación en R, interpretación de resultados.
+```
