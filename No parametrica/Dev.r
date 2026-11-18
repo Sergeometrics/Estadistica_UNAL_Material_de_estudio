@@ -515,3 +515,79 @@ media<-mean(x)
 des<-sd(x)
 plot(density(x))
 plot(sort(x),dnorm(sort(x),media,des),type="l",col="red",lwd=2)
+
+
+library (sm)
+#install.packages("bde")
+library(bde)
+#install.packages("extraDistr")
+library(extraDistr)
+
+set.seed(8)
+n=100
+miu=30
+sigma=4
+datos=rnorm(n, miu, sigma)
+hist(datos)
+Tobser=nise(datos)
+n=length(datos)
+ts=1000
+Tsimulacion=replicate(ts, expr=nise(rnorm(n)))
+pval=sum(Tsimulacion>Tobser)/ts
+pval
+hist(Tsimulacion, freq=FALSE, main="Distribución de T", xlab="T Simulado bajo
+Normalidad", ylab="Frecuencia")
+abline(v=Tobser, col=2, lwd=2, lty=2)
+abline(v=quantile(Tsimulacion, prob=0.95), col=4, lwd=2, lty=2)
+legend("topright", bty="n", legend=c("T observado", "T crítico"), lty=2, col=c
+(2, 4), cex=0.8)
+
+set.seed(123)
+n <- 30
+# =========================
+# Media y varianza objetivo
+# =========================
+mu <- 50
+var_target <- 100
+sd_target <- sqrt(var_target)
+# =================================================
+# Conjuanto A: distribución aproximadamente normal
+# =================================================
+A_raw <- rnorm(n)
+A <- mu + (sd_target/sd(A_raw))*(A_raw - mean(A_raw))
+# ============================================================
+# Conjunto B: distribución asimétrica (log-normal suavizada)
+# ============================================================
+B_raw <- rlnorm(n, meanlog = 0, sdlog = 0.25)
+# =====================================================
+# Estandarización para que tenga misma media y varianza
+# =====================================================
+B <- mu + (sd_target/sd(B_raw))*(B_raw - mean(B_raw))
+# ============
+# Verificación
+# ============
+
+
+cat("Dataset A\n")
+cat("Media =", mean(A), "\n")
+cat("Varianza =", var(A), "\n\n")
+cat("Dataset B\n")
+cat("Media =", mean(B), "\n")
+cat("Varianza =", var(B), "\n\n")
+
+# =====================
+# Gráficos comparativos
+# =====================
+par(mfrow=c(2,2))
+hist(A, col="lightblue", main="Histograma A (Normal)", xlab="A")
+plot(density(A), main="Densidad A")
+hist(B, col="lightgreen", main="Histograma B (Asimétrica)", xlab="B")
+plot(density(B), main="Densidad B")
+
+# ================================
+# Comparación de diagramas de caja
+# ================================
+boxplot(A,B,names=c("A Normal","B Asimétrica"),
+col=c("lightblue","lightgreen"),
+main="Igual media y varianza, distinta distribución")
+
